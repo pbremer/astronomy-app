@@ -26,12 +26,14 @@ public class RemoveGroupMember
 	  }
 
 	  @Test
-	  public void test()
+	  public void RemoveMemberFromGroup()
 	  {
 		  Login.LoginUser(driver, "user1@umich.edu", "password");
 		  driver.findElement(Courses.SelectCourseLink("course1Atitle")).click();
 		  driver.findElement(CourseAssignments.SelectModule("mod1-course1Atitle")).click();
-		  driver.findElement(CourseModule.CreateEditGroupButton()).click();
+		  driver.findElement(CourseModule.CREATE_OR_EDIT_GROUP_BTN).click();
+		  
+		  //Removing users from group
 		  driver.findElement(CourseModule.RemoveGroupMember(5)).click();
 		  driver.findElement(CourseModule.RemoveGroupMember(4)).click();
 	  }

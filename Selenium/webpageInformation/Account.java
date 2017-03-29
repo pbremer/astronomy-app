@@ -4,13 +4,6 @@ import org.openqa.selenium.By;
 
 public class Account extends MainNavigation
 {
-	static public By NewPasswordField ()
-	{
-		return By.name("newPassword");
-	}
-	
-	static public By RetypePasswordField()
-	{
-		return By.name("retypePassword");
-	}
+	public static final By NEW_PASSWORD_FIELD = By.name("newPassword");
+	public static final By RETYPE_PASSWORD_FIELD = By.name("retypePassword");
 }

@@ -25,18 +25,16 @@ public class ChangeUserPassword {
 	  }
 
 	  @Test
-	  public void test()
+	  public void ChangeUsersPassword()
 	  {
 		  Login.LoginUser(driver, "user1@umich.edu", "password");
-		  driver.findElement(Courses.AccountButton()).click();
-		  driver.findElement(Account.NewPasswordField()).clear();
-		  driver.findElement(Account.NewPasswordField()).clear();
-		  driver.findElement(Account.NewPasswordField()).sendKeys("password1");
-		  driver.findElement(Account.RetypePasswordField()).clear();
-		  driver.findElement(Account.RetypePasswordField()).sendKeys("password1");
+		  driver.findElement(Courses.ACCOUNT_BTN).click();
 		  
-		  driver.findElement(Account.LogoutButton()).click();
-		  Login.LoginUser(driver, "user1@umich.edu", "password");
+		  //Changing password
+		  driver.findElement(Account.NEW_PASSWORD_FIELD).clear();
+		  driver.findElement(Account.NEW_PASSWORD_FIELD).sendKeys("password1");
+		  driver.findElement(Account.RETYPE_PASSWORD_FIELD).clear();
+		  driver.findElement(Account.RETYPE_PASSWORD_FIELD).sendKeys("password1");
 	  }
 
 	  @After

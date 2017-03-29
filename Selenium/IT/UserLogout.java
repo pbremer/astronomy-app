@@ -24,10 +24,10 @@ public class UserLogout extends TestCase
 	  }
 
 	  @Test
-	  public void test()
+	  public void LogoutStudent()
 	  {
 		  Login.LoginUser(driver, "user1@umich.edu", "password");
-		  driver.findElement(Courses.LogoutButton()).click();
+		  driver.findElement(Courses.LOGOUT_BTN).click();
 	  }
 
 	  @After

@@ -8,6 +8,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import junit.framework.TestCase;
+import webpageInformation.Courses;
 import webpageInformation.Login;
 
 public class UserLogin extends TestCase
@@ -23,14 +24,39 @@ public class UserLogin extends TestCase
 	  }
 
 	  @Test
-	  public void test()
+	  public void LoginStudent()
 	  {
-		  driver.get((Login.Url()));
-		  driver.findElement(Login.UsernameTextBox()).clear();
-		  driver.findElement(Login.UsernameTextBox()).sendKeys("user1@umich.edu");
-		  driver.findElement(Login.PasswordTextBox()).clear();
-		  driver.findElement(Login.PasswordTextBox()).sendKeys("password");
-		  driver.findElement(Login.LoginButton()).click();
+		  driver.get((Login.URL));
+		  driver.findElement(Login.USERNAME_TXTBOX).clear();
+		  driver.findElement(Login.USERNAME_TXTBOX).sendKeys("user1@umich.edu");
+		  driver.findElement(Login.PASSWORD_TXTBOX).clear();
+		  driver.findElement(Login.PASSWORD_TXTBOX).sendKeys("password");
+		  driver.findElement(Login.LOGIN_BTN).click();
+		  driver.findElement(Courses.LOGOUT_BTN).click();
+	  }
+	  
+	  @Test
+	  public void LoginInstructor()
+	  {
+		  driver.get((Login.URL));
+		  driver.findElement(Login.USERNAME_TXTBOX).clear();
+		  driver.findElement(Login.USERNAME_TXTBOX).sendKeys("user1@umich.edu");
+		  driver.findElement(Login.PASSWORD_TXTBOX).clear();
+		  driver.findElement(Login.PASSWORD_TXTBOX).sendKeys("password");
+		  driver.findElement(Login.LOGIN_BTN).click();
+		  driver.findElement(Courses.LOGOUT_BTN).click();
+	  }
+	  
+	  @Test
+	  public void LoginAdmin()
+	  {
+		  driver.get((Login.URL));
+		  driver.findElement(Login.USERNAME_TXTBOX).clear();
+		  driver.findElement(Login.USERNAME_TXTBOX).sendKeys("user1@umich.edu");
+		  driver.findElement(Login.PASSWORD_TXTBOX).clear();
+		  driver.findElement(Login.PASSWORD_TXTBOX).sendKeys("password");
+		  driver.findElement(Login.LOGIN_BTN).click();
+		  driver.findElement(Courses.LOGOUT_BTN).click();
 	  }
 
 	  @After

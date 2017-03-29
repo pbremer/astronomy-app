@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
@@ -13,7 +15,7 @@ import webpageInformation.CourseModule;
 import webpageInformation.Courses;
 import webpageInformation.Login;
 
-public class CreateGroup 
+public class FinalizeGroup 
 {
 	 private WebDriver driver;
 
@@ -26,18 +28,36 @@ public class CreateGroup
 	  }
 
 	  @Test
-	  public void test()
+	  public void FinalizeUserGroup()
 	  {
 		  Login.LoginUser(driver, "user1@umich.edu", "password");
 		  driver.findElement(Courses.SelectCourseLink("course1Atitle")).click();
 		  driver.findElement(CourseAssignments.SelectModule("mod1-course1Atitle")).click();
-		  driver.findElement(CourseModule.CreateEditGroupButton()).click();
-		  driver.findElement(CourseModule.FinalizeButton()).click();
+		  driver.findElement(CourseModule.CONFIRM_GROUP_BTN).click();
+		  retry(CourseModule.FINALIZE_BTN);
+		  driver.switchTo().activeElement();
+		  driver.findElement(CourseModule.REJECT_GROUP_BTN).click();
 	  }
 
 	  @After
 	  public void tearDown()
 	  {
 		  driver.quit();
+	  }
+	  
+	  public void retry(By by)
+	  {
+		  int attempts = 0;
+		  while(attempts < 3)
+		  {
+			  try
+			  {
+				  driver.findElement(by).click();
+				  break;
+			  }
+			  catch(StaleElementReferenceException e){
+			  }
+			  attempts++;
+		  }
 	  }
 }

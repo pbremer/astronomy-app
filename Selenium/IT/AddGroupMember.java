@@ -26,16 +26,18 @@ public class AddGroupMember {
 	  }
 
 	  @Test
-	  public void test()
+	  public void AddNewGroupMembers()
 	  {
 		  Login.LoginUser(driver, "user1@umich.edu", "password");
 		  driver.findElement(Courses.SelectCourseLink("course1Atitle")).click();
 		  driver.findElement(CourseAssignments.SelectModule("mod1-course1Atitle")).click();
-		  driver.findElement(CourseModule.CreateEditGroupButton()).click();
+		  driver.findElement(CourseModule.CREATE_OR_EDIT_GROUP_BTN).click();
+		  
+		  //Adding users
 		  CourseModule.SelectUserFromDropDown(driver, "User4fname User4lname");
-		  driver.findElement(CourseModule.AddGroupMemberButton()).click();
+		  driver.findElement(CourseModule.ADD_GROUP_MEMBER_BTN).click();
 		  CourseModule.SelectUserFromDropDown(driver, "User5fname User5lname");
-		  driver.findElement(CourseModule.AddGroupMemberButton()).click();
+		  driver.findElement(CourseModule.ADD_GROUP_MEMBER_BTN).click();
 	  }
 
 	  @After
