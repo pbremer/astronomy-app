@@ -2,7 +2,7 @@ package webpageInformation;
 
 import org.openqa.selenium.By;
 
-public class Members 
+public class CourseMembers 
 {
 	public static final By ADD_MEMBERS_BTN = By.cssSelector("button.btn.btn-primary");
 	public static final By CONFIRM_REMOVE_BTN = By.xpath("//button");
