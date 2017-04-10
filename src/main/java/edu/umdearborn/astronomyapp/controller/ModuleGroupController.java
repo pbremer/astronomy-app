@@ -7,6 +7,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,8 @@ import edu.umdearborn.astronomyapp.entity.Answer;
 import edu.umdearborn.astronomyapp.entity.CourseUser;
 import edu.umdearborn.astronomyapp.entity.ModuleGroup;
 import edu.umdearborn.astronomyapp.service.AclService;
+import edu.umdearborn.astronomyapp.service.AutoGradeService;
+import edu.umdearborn.astronomyapp.service.GradeService;
 import edu.umdearborn.astronomyapp.service.GroupService;
 import edu.umdearborn.astronomyapp.util.HttpSessionUtil;
 import edu.umdearborn.astronomyapp.util.json.JsonDecorator;
@@ -44,12 +47,17 @@ public class ModuleGroupController {
 
   private static final Logger logger = LoggerFactory.getLogger(ModuleGroupController.class);
 
-  private AclService   acl;
-  private GroupService groupService;
+  private AclService       acl;
+  private GroupService     groupService;
+  private GradeService     gradeService;
+  private AutoGradeService autoGradeService;
 
-  public ModuleGroupController(AclService acl, GroupService groupService) {
+  public ModuleGroupController(AclService acl, GroupService groupService, GradeService gradeService,
+      AutoGradeService autoGradeService) {
     this.acl = acl;
     this.groupService = groupService;
+    this.gradeService = gradeService;
+    this.autoGradeService = autoGradeService;
   }
 
   @RequestMapping(value = STUDENT_PATH + "/course/{courseId}/module/{moduleId}/group",
@@ -276,7 +284,8 @@ public class ModuleGroupController {
       method = GET)
   public Map<String, Boolean> hasLock(@PathVariable("courseId") String courseId,
       @PathVariable("moduleId") String moduleId, @PathVariable("groupId") String groupId,
-      HttpSession session, Principal principal) {
+      @RequestParam(name = "page", defaultValue = "1") int pageNumber, HttpSession session,
+      Principal principal) {
 
     String courseUserId = HttpSessionUtil.getCourseUserId(session, courseId);
 
@@ -291,7 +300,8 @@ public class ModuleGroupController {
     Map<String, Boolean> map = new HashMap<>();
     boolean hasLock = groupService.hasLock(groupId, checkedIn);
     map.put("hasLock", hasLock);
-    map.put("isModuleEditable", hasLock && true);
+    map.put("isModuleEditable",
+        hasLock && autoGradeService.answeredGatekeepers(moduleId, pageNumber, groupId));
 
     return map;
   }
@@ -402,6 +412,80 @@ public class ModuleGroupController {
     groupService.finalizeGroup(groupId);
 
     return ResponseEntity.ok().build();
+  }
+
+  @RequestMapping(value = INSTRUCTOR_PATH + "/course/{courseId}/module/{moduleId}/groups",
+      method = GET)
+  public Map<String, List<CourseUser>> getGroups(@PathVariable("courseId") String courseId,
+      @PathVariable("moduleId") String moduleId, Principal principal) {
+
+    acl.enforceInCourse(principal.getName(), courseId);
+
+    return groupService.getGroups(moduleId);
+  }
+
+  @RequestMapping(value = INSTRUCTOR_PATH + "/course/{courseId}/module/{moduleId}/group/{groupId}",
+      method = GET)
+  public Map<String, Answer> getAnswers(@PathVariable("courseId") String courseId,
+      @PathVariable("moduleId") String moduleId, @PathVariable("groupId") String groupId,
+      Principal principal) {
+
+    acl.enforceInCourse(principal.getName(), courseId);
+    acl.enforceGroupInCourse(groupId, courseId);
+    acl.enforceModuleClosed(moduleId);
+
+    Optional.ofNullable(groupService.getAnswers(groupId, false)).orElse(new ArrayList<Answer>())
+        .stream().filter(a -> a.getQuestion().isMachineGradeable() && a.getPointesEarned() == null)
+        .forEach(a -> {
+          BigDecimal points;
+          if (autoGradeService.checkAnswer(a.getId())) {
+            logger.debug("Answer: '{}' with value '{}' for question: '{}' is not correct",
+                a.getId(), a.getValue(), a.getQuestion().getId());
+            points = a.getQuestion().getPoints();
+          } else {
+            logger.debug("Answer: '{}' with value '{}' for question: '{}' is correct", a.getId(),
+                a.getValue(), a.getQuestion().getId());
+            points = BigDecimal.ZERO;
+          }
+
+          autoGradeService.setPointsEarned(a.getId(), points);
+        });
+
+    return Optional.ofNullable(groupService.getAnswers(groupId, false))
+        .orElse(new ArrayList<Answer>()).parallelStream()
+        .collect(Collectors.toMap(a -> a.getQuestion().getId(), a -> a));
+  }
+
+  @RequestMapping(value = INSTRUCTOR_PATH + "/course/{courseId}/module/{moduleId}/group/{groupId}",
+      method = POST)
+  public Map<String, Answer> gradeAnswers(@PathVariable("courseId") String courseId,
+      @PathVariable("moduleId") String moduleId, @PathVariable("groupId") String groupId,
+      Principal principal, @RequestBody Map<String, Map<String, String>> answers) {
+
+    acl.enforceInCourse(principal.getName(), courseId);
+    acl.enforceGroupInCourse(groupId, courseId);
+    acl.enforceModuleClosed(moduleId);
+
+    // return Optional.ofNullable(groupService.gradeAnswers(answers)).orElse(new
+    // ArrayList<Answer>())
+    // .parallelStream().collect(Collectors.toMap(a -> a.getQuestion().getId(), a -> a));
+
+    groupService.gradeAnswers(answers);
+
+    return Optional.ofNullable(groupService.getAnswers(groupId, false))
+        .orElse(new ArrayList<Answer>()).parallelStream()
+        .collect(Collectors.toMap(a -> a.getQuestion().getId(), a -> a));
+  }
+
+  @RequestMapping(value = STUDENT_PATH + "/course/{courseId}/module/{moduleId}/grade", method = GET)
+  public Map<String, Object> getGrade(@PathVariable("courseId") String courseId,
+      @PathVariable("moduleId") String moduleId, Principal principal) {
+
+    acl.enforceInCourse(principal.getName(), courseId);
+    acl.enforceIsCourseRole(principal.getName(), courseId,
+        Arrays.asList(CourseUser.CourseRole.STUDENT));
+
+    return gradeService.getGrade(principal.getName(), moduleId);
   }
 
   private List<String> getCheckinSessionAttribute(HttpSession session, String groupId,

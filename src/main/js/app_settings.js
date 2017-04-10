@@ -10,6 +10,13 @@ module.exports = angular.module('app.settings', [])
             "courseUserId" : 'courseUserId'
         }
     },
+    "QUESTION_TYPES" : {
+        MULTIPLE_CHOICE : "Multiple Choice",
+        NUMERIC : "Numeric",
+        FREE_RESPONSE : "Free Response",
+        IMAGE : "Image Upload",
+        TEXT : "Front Text"
+    },
     "USER" : {
         "mainNavigationLinks" : [
             {
@@ -30,11 +37,6 @@ module.exports = angular.module('app.settings', [])
                 "name" : "Assignments",
                 "state" : "app.course.assignments",
                 "icon" : "glyphicon glyphicon-edit"
-            },
-            {
-                "name" : "Grades",
-                "state" : "app.course.grades",
-                "icon" : "glyphicon glyphicon-book"
             }
         ],
         "quizComponentTemplates" : {
