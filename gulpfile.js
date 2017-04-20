@@ -1,4 +1,6 @@
 var gulp = require('gulp');
+var htmlmin = require('gulp-htmlmin');
+var stripDebug = require('gulp-strip-debug');
 var templateCache = require('gulp-angular-templatecache');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
@@ -20,6 +22,7 @@ gulp.task('templates', function(){
     return gulp.src([
         'src/main/js/**/*.html'
         ])
+        .pipe(htmlmin({collapseWhitespace: false}))
         .pipe(templateCache({
             module : 'app.templates',
             standalone : true
@@ -35,7 +38,15 @@ gulp.task('browserify', [ 'clean' ], function() {
 	}).bundle().on('error', function(e) {
 		gutil.log(e);
 		process.exit(1);
-	}).pipe(source('src/main/js/dist/bundle.js')).pipe(gulp.dest('.'));
+	})
+        .pipe(source('src/main/js/dist/bundle.js'))
+        .pipe(buffer())
+        .pipe(stripDebug())
+        .pipe(ngAnnotate())
+        .pipe(uglify().on('error', function(e){
+            gutil.log(e);
+        }))
+        .pipe(gulp.dest('.'));
 
 });
 

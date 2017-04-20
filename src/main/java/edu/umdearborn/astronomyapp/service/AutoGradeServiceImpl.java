@@ -1,9 +1,11 @@
 package edu.umdearborn.astronomyapp.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -46,7 +48,8 @@ public class AutoGradeServiceImpl implements AutoGradeService {
   @Override
   public boolean checkAnswer(String answerId) {
     Answer answer = entityManager.find(Answer.class, answerId);
-    entityManager.clear(); // Clears persistence context so entity manager will find question with
+    entityManager.clear(); // Clears persistence context so entity manager
+                           // will find question with
                            // correct type
     logger.debug("Checking answer: {}", answerId);
     if (QuestionType.NUMERIC.equals(answer.getQuestion().getQuestionType())) {
@@ -93,6 +96,36 @@ public class AutoGradeServiceImpl implements AutoGradeService {
         .map(e -> e.getId()).findAny().orElse("!" + answer.getValue());
 
     return correctUnit.equals(answer.getValue());
+  }
+
+  @Override
+  public boolean answeredGatekeepers(String moduleId, int pageNum, String groupId) {
+    List<Question> qs =
+        Optional.of(getGatekeepers(moduleId, pageNum)).orElseGet(ArrayList<Question>::new);
+    if (qs.isEmpty()) {
+      return true;
+    }
+    List<Answer> ans = Optional
+        .of(entityManager.createQuery("select a from Answer a join a.group g where g.id = :groupId",
+            Answer.class).setParameter("groupId", groupId).getResultList())
+        .orElseGet(ArrayList<Answer>::new).stream().filter(e -> qs.contains(e.getQuestion()))
+        .filter(e -> (e.getPointesEarned() == null
+            || e.getPointesEarned().compareTo(BigDecimal.ZERO) == 0))
+        .collect(Collectors.toList());
+
+    return ans.isEmpty();
+
+
+  }
+
+  @Override
+  public Answer setPointsEarned(String answerId, BigDecimal points) {
+    Answer answer = entityManager.find(Answer.class, answerId);
+    answer.setPointesEarned(points);
+    entityManager.merge(answer);
+
+    return answer;
+
   }
 
 }

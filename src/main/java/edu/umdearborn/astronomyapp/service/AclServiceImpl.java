@@ -263,8 +263,8 @@ public class AclServiceImpl implements AclService {
   @Override
   public void enforceModuleNotOpen(String moduleId) {
     TypedQuery<Boolean> query = entityManager.createQuery(
-        "select count(m) > 0 from Module m where m.openTimestamp > now() and m.id = :id or "
-            + "m.openTimestamp is null",
+        "select count(m) > 0 from Module m where m.id = :id and (m.openTimestamp > now() or "
+            + "m.openTimestamp is null)",
         Boolean.class);
     query.setParameter("id", moduleId);
     boolean result = query.getSingleResult();
@@ -307,6 +307,19 @@ public class AclServiceImpl implements AclService {
     }
 
     logger.debug("Course: '{}' is not closed", courseId);
+
+  }
+
+  @Override
+  public void enforeModuleNotClosed(String moduleId) {
+    if (!entityManager.createQuery(
+        "select count(m) > 0 from Module m where m.closeTimestamp > now() and m.id = :id",
+        Boolean.class).setParameter("id", moduleId).getSingleResult()) {
+      logger.debug("Module: '{}' is closed", moduleId);
+      throw new AccessDeniedException("Module: " + moduleId + " is closed");
+    }
+
+    logger.debug("Module: '{}' is not closed", moduleId);
 
   }
 

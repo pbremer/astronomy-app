@@ -11,13 +11,14 @@ function Directive($state, QuestionService){
         };
 
         setAnswer(scope);
+        var _scope = scope;
         //Upload image upon the click of the Upload Button
         scope.uploadImage = function(file){
             //reset the check variables
             scope.uploaded = false;
             scope.error = false;
             if(file){
-                fileUpload(file, scope);
+                fileUpload(file, _scope);
             } else {
                 _scope.error = true;
             }
@@ -32,6 +33,9 @@ function Directive($state, QuestionService){
         QuestionService.uploadImage(file).then(function(res){
             _scope.uploaded = true;
             //set the model answer
+            _scope.model = {
+                type : _scope.field.questionType
+            };
             _scope.model.answer = res;
         }, function(err){
             _scope.error = true;
@@ -46,14 +50,15 @@ function Directive($state, QuestionService){
         var _scope = scope;
         scope.$watch('savedAnswers', function(newAnswer){
             if(newAnswer && "value" in newAnswer){
+                _scope.model = {
+                    type : _scope.field.questionType
+                };
                 _scope.model.answer = newAnswer.value.answer;
             }
         });
     }
 
     var directive = {
-        controller: 'InputComponentController',
-        controllerAs: 'componentCtrl',
         templateUrl: 'components/quiz/image_upload/home.html',
         link : link,
         scope: {

@@ -129,15 +129,40 @@ Service.prototype.saveAnswers = function(courseId, moduleId, groupId, payload){
             console.log(res.data);
             return res.data;
         });
-}
+};
 
-Service.prototype.getAnswers = function(courseId, moduleId, groupId){
+Service.prototype.savePoints = function(courseId, moduleId, groupId, payload){
     var self = this;
     var config = self.getConfig();
-    var url = self._appSettings.API.basePath + '/rest/student/course/'+
+    var url = self._appSettings.API.basePath + '/rest/instructor/course/'+
     courseId+ '/module/'
     + moduleId + "/group/"
-    + groupId + "/answers/?showSaved=true";
+    + groupId;
+    return this._$http
+        .post(url, payload, config)
+        .then(function (res) {
+            console.log("Save all the answers");
+            console.log(res.data);
+            return res.data;
+        });
+}
+
+Service.prototype.getAnswers = function(courseId, moduleId, groupId, showSaved){
+    var self = this;
+    var config = self.getConfig();
+    config.params.showSaved = showSaved;
+
+    var url = {};
+    url[self.userRoles.user] = self._appSettings.API.basePath + '/rest/student/course/'+
+    courseId+ '/module/'
+    + moduleId + "/group/"
+    + groupId + "/answers/";
+    url[self.userRoles.instructor] = self._appSettings.API.basePath + '/rest/instructor/course/'+
+    courseId+ '/module/'
+    + moduleId + "/group/"
+    + groupId + "/answers/";
+    url = self.getUrl(url);
+
     return this._$http
         .get(url, config)
         .then(function (res) {
@@ -160,7 +185,7 @@ Service.prototype.uploadImage = function(file){
 
     var data = {};
     data["file"] = file;
-    return self._Upload.upload({url, data })
+    return self._Upload.upload({ url: url, data : data })
           .then(function (res) {
             console.log("Uploaded Image");
             console.log(res);

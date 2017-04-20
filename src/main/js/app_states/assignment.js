@@ -14,6 +14,17 @@ var states = [
         }
     },
     {
+        name : 'app.course.assignment.groups',
+        url : '/groups',
+        views : {
+            'assignmentContent' : {
+                templateUrl : 'views/instructor/assignment_groups/home.html',
+                controller : 'Instructor.AssignmentGroups',
+                controllerAs : 'assignmentGroupsCtrl'
+            }
+        }
+    },
+    {
         name : 'app.course.assignment.group',
         url : '/group/{groupId}',
         views : {
@@ -65,13 +76,10 @@ var states = [
                 controllerAs : 'assignmentQuestions'
             }
         },
-        resolve : {
-            lock : ['GroupService','$stateParams','$state', function(GroupService, $stateParams, $state){
-                var courseId = $stateParams.courseId;
-                var moduleId = $stateParams.moduleId;
-                var groupId = $stateParams.groupId;
-                return GroupService.getLock(courseId, moduleId, groupId);
-            }]
+        params : {
+            viewOnly : false,
+            grading : false,
+            currentPage : 1
         }
     },
     {

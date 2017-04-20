@@ -1,9 +1,8 @@
 'use strict';
 
-
 //External
-//global.rangy = require('rangy');
 require('angular');
+require('angular-messages');
 require('angular-ui-router');
 require('angular-ui-bootstrap');
 require('angular-animate');
@@ -29,6 +28,7 @@ var appModule = angular.module("app", [
     'ngAnimate',
     'ngFileUpload',
     'textAngular',
+    'ngMessages',
 
     //Internal
     'app.templates',
